@@ -41,3 +41,4 @@ out/
 ### Sample client data files ###
 *_Eliptical_data*
 *.csv
+*.db
