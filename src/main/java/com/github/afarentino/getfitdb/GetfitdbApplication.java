@@ -65,14 +65,24 @@ public class GetfitdbApplication implements ApplicationRunner {
 
     private static boolean tableExists(String tableName) {
         String sql = """
-                SELECT name FROM sqlite_master WHERE type='table' AND name = ?
-                """;
-       /** try (Connection con = DriverManager.getConnection(url);
-             PreparedStatement pstmt = con.prepareStatement(sql);
-        {
+                SELECT name FROM sqlite_master 
+                WHERE type='table' AND name='records';""";
 
-        } */
-        throw new RuntimeException("Not Yet Implemented!");
+		String param = "'" + tableName + "'";
+        boolean exists = false;
+		try (Connection con = DriverManager.getConnection(url);
+             PreparedStatement pstmt = con.prepareStatement(sql))
+        {
+			//pstmt.setString(1, param);
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				String name = rs.getString(1);
+				exists = (name.equalsIgnoreCase(tableName)) ? true : false;
+			}
+        } catch (SQLException e) {
+			logger.error(e.getMessage());
+		}
+        return exists;
     }
 
 	private static void dropTable() {
@@ -101,6 +111,10 @@ public class GetfitdbApplication implements ApplicationRunner {
 				AvgHeartRate INTEGER,
 				MaxHeartRate INTEGER,
 				Notes TEXT);""";
+
+		if (tableExists("records")) {
+			dropTable();
+		}
 
 		try (Connection conn = DriverManager.getConnection(url);
 			 Statement stmt = conn.createStatement()) {
@@ -217,7 +231,6 @@ public class GetfitdbApplication implements ApplicationRunner {
 		if (csv != null && csv.exists() ) {
 			logger.info("CSV used is: " + csv.getName());
 			createNewDatabase();
-			//dropTable();
 			createNewTable();
 			insertIntoTable(fileName);
 		} else {
