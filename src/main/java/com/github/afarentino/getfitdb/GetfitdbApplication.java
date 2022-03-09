@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 
 import java.nio.file.Files;
 
-
+// Same as @SpringBootConfiguration @EnableAutoConfiguration @ComponentScan
 @SpringBootApplication
 public class GetfitdbApplication implements ApplicationRunner {
 	private static final Logger logger = LoggerFactory.getLogger(GetfitdbApplication.class);
@@ -63,17 +63,43 @@ public class GetfitdbApplication implements ApplicationRunner {
 		}
 	}
 
-	private static void createNewTable() {
-		//TODO: Try to use different data types
+    private static boolean tableExists(String tableName) {
+        String sql = """
+                SELECT name FROM sqlite_master WHERE type='table' AND name = ?
+                """;
+       /** try (Connection con = DriverManager.getConnection(url);
+             PreparedStatement pstmt = con.prepareStatement(sql);
+        {
+
+        } */
+        throw new RuntimeException("Not Yet Implemented!");
+    }
+
+	private static void dropTable() {
 		String sql = """
+  			DROP TABLE IF EXISTS records;
+		""";
+
+		try (Connection conn = DriverManager.getConnection(url);
+			 Statement stmt = conn.createStatement()) {
+			stmt.execute(sql);
+		} catch (SQLException e) {
+			logger.error(e.getMessage());
+		}
+	}
+
+	private static void createNewTable() {
+		// TODO: Externalize SQL used via properties
+        // allows schema to change without changing code.
+        String sql = """
 				CREATE TABLE IF NOT EXISTS records (
-				Start TEXT,
-				Distance TEXT,
-				ZoneTime TEXT,
-				ElapsedTime TEXT,
-				CaloriesBurned TEXT,
-				AvgHeartRate TEXT,
-				MaxHeartRate TEXT,
+				Start TEXT PRIMARY KEY NOT NULL,
+				Distance DOUBLE,
+				ZoneTime DOUBLE,
+				ElapsedTime INTEGER,
+				CaloriesBurned INTEGER,
+				AvgHeartRate INTEGER,
+				MaxHeartRate INTEGER,
 				Notes TEXT);""";
 
 		try (Connection conn = DriverManager.getConnection(url);
@@ -99,7 +125,7 @@ public class GetfitdbApplication implements ApplicationRunner {
 		Path path = Path.of(fileName);
 
 		AtomicBoolean isFirst = new AtomicBoolean(true);
-		AtomicReference<Connection> rollbackCon = null;
+		AtomicReference<Connection> rollbackCon = new AtomicReference(null);
 		try (Connection con = DriverManager.getConnection(url);
 			 PreparedStatement pstmt = con.prepareStatement(sql);
 			 Stream<String> lines = Files.lines(path)) {
@@ -112,12 +138,44 @@ public class GetfitdbApplication implements ApplicationRunner {
 					String[] values = s.split(",");
 					try {
 						pstmt.setString(1, values[0]);
-						pstmt.setString(2, values[1]);
-						pstmt.setString(3, values[2]);
-						pstmt.setString(4, values[3]);
-						pstmt.setString(5, values[4]);
-						pstmt.setString(6, values[5]);
-						pstmt.setString(7, values[6]);
+
+						if (values[1].isEmpty()) {
+							pstmt.setNull(2, Types.NULL);
+						} else {
+							pstmt.setDouble(2, Double.parseDouble(values[1]));
+						}
+
+						if (values[2].isEmpty()) {
+							pstmt.setNull(3, Types.NULL );
+						} else {
+							pstmt.setDouble(3, Double.parseDouble(values[2]));
+						}
+
+						if (values[3].isEmpty()) {
+							pstmt.setNull( 4, Types.NULL );
+						} else {
+							pstmt.setInt(4, Integer.parseInt(values[3]));
+						}
+
+						if (values[4].isEmpty()) {
+							pstmt.setNull( 5, Types.NULL );
+						} else {
+							pstmt.setInt(5, Integer.parseInt(values[4]));
+						}
+
+						if (values[5].isEmpty()) {
+							pstmt.setNull( 6, Types.NULL);
+						} else {
+							pstmt.setInt(6, Integer.parseInt(values[5]));
+						}
+
+						if (values[6].isEmpty()) {
+							pstmt.setNull( 7, Types.NULL);
+						} else {
+							pstmt.setInt(7, Integer.parseInt(values[6]));
+						}
+
+						// NOTES are optional so handle them accordingly
 						if (values.length == 8) {
 							pstmt.setString(8, values[7]);
 						} else {
@@ -159,6 +217,7 @@ public class GetfitdbApplication implements ApplicationRunner {
 		if (csv != null && csv.exists() ) {
 			logger.info("CSV used is: " + csv.getName());
 			createNewDatabase();
+			//dropTable();
 			createNewTable();
 			insertIntoTable(fileName);
 		} else {
