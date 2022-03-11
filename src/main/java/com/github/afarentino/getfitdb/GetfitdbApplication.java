@@ -56,7 +56,7 @@ public class GetfitdbApplication implements ApplicationRunner {
 			if (conn != null) {
 				DatabaseMetaData meta = conn.getMetaData();
 				logger.info("The driver name is " + meta.getDriverName());
-				logger.info("A new records.db SQLite database has been created.");
+				logger.info("Connected to records.db SQLite database.");
 			}
 		} catch (SQLException ex) {
 			logger.error(ex.getMessage());
@@ -64,20 +64,17 @@ public class GetfitdbApplication implements ApplicationRunner {
 	}
 
     private static boolean tableExists(String tableName) {
-        String sql = """
-                SELECT name FROM sqlite_master 
-                WHERE type='table' AND name='records';""";
+        String sql = "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?";
 
-		String param = "'" + tableName + "'";
         boolean exists = false;
 		try (Connection con = DriverManager.getConnection(url);
              PreparedStatement pstmt = con.prepareStatement(sql))
         {
-			//pstmt.setString(1, param);
+			pstmt.setString(1, tableName);
 			ResultSet rs = pstmt.executeQuery();
-			while (rs.next()) {
-				String name = rs.getString(1);
-				exists = (name.equalsIgnoreCase(tableName)) ? true : false;
+			if (rs.next()) {
+				String name = rs.getString("name").toLowerCase();
+				exists = tableName.toLowerCase().contains(name) ? true : false;
 			}
         } catch (SQLException e) {
 			logger.error(e.getMessage());
@@ -86,10 +83,7 @@ public class GetfitdbApplication implements ApplicationRunner {
     }
 
 	private static void dropTable() {
-		String sql = """
-  			DROP TABLE IF EXISTS records;
-		""";
-
+		String sql = "DROP TABLE IF EXISTS records;";
 		try (Connection conn = DriverManager.getConnection(url);
 			 Statement stmt = conn.createStatement()) {
 			stmt.execute(sql);
@@ -99,7 +93,7 @@ public class GetfitdbApplication implements ApplicationRunner {
 	}
 
 	private static void createNewTable() {
-		// TODO: Externalize SQL used via properties
+		// TODO: Externalize sql using application properties
         // allows schema to change without changing code.
         String sql = """
 				CREATE TABLE IF NOT EXISTS records (
@@ -124,7 +118,76 @@ public class GetfitdbApplication implements ApplicationRunner {
 		}
 	}
 
-	private static void insertIntoTable(String fileName) throws SQLException {
+	private static boolean rowExists(Connection con, String primaryKey) throws SQLException {
+		String sql = "SELECT COUNT(*) FROM records WHERE Start = ?;";
+		int exists = 0;
+		try (PreparedStatement pstmt = con.prepareStatement(sql)) {
+			pstmt.setString(1, "'" + primaryKey + "'");
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				exists = rs.getInt(1);
+			}
+		}
+		return (exists == 1);
+	}
+
+	private static void updateRow(Connection con, String[] values) throws SQLException {
+		String sql = """
+ 				UPDATE records
+ 				SET Distance = ?, ZoneTime = ?, ElapsedTime = ?, CaloriesBurned = ?, 
+ 				AvgHeartRate = ?, MaxHeartRate = ?, Notes = ? 
+ 				WHERE Start = ?;""";
+
+		try (PreparedStatement pstmt = con.prepareStatement(sql)) {
+			pstmt.setString(8, values[0]);
+
+			if (values[1].isEmpty()) {
+				pstmt.setNull(1, Types.NULL);
+			} else {
+				pstmt.setDouble(1, Double.parseDouble(values[1]));
+			}
+
+			if (values[2].isEmpty()) {
+				pstmt.setNull(2, Types.NULL);
+			} else {
+				pstmt.setDouble(2, Double.parseDouble(values[2]));
+			}
+
+			if (values[3].isEmpty()) {
+				pstmt.setNull(3, Types.NULL);
+			} else {
+				pstmt.setInt(3, Integer.parseInt(values[3]));
+			}
+
+			if (values[4].isEmpty()) {
+				pstmt.setNull(4, Types.NULL);
+			} else {
+				pstmt.setInt(4, Integer.parseInt(values[4]));
+			}
+
+			if (values[5].isEmpty()) {
+				pstmt.setNull(5, Types.NULL);
+			} else {
+				pstmt.setInt(5, Integer.parseInt(values[5]));
+			}
+
+			if (values[6].isEmpty()) {
+				pstmt.setNull(6, Types.NULL);
+			} else {
+				pstmt.setInt(6, Integer.parseInt(values[6]));
+			}
+
+			// NOTES are optional so handle them accordingly
+			if (values.length == 8) {
+				pstmt.setString(7, values[7]);
+			} else {
+				pstmt.setString(7, "");
+			}
+			pstmt.executeUpdate();
+		}
+	}
+
+	private static void addRow(Connection con, String[] values) throws SQLException {
 		String sql = """
 				INSERT INTO records(
 					Start,
@@ -136,14 +199,66 @@ public class GetfitdbApplication implements ApplicationRunner {
 					MaxHeartRate,
 					Notes) VALUES (?,?,?,?,?,?,?,?);""";
 
-		Path path = Path.of(fileName);
+		try (PreparedStatement pstmt = con.prepareStatement(sql)) {
+			pstmt.setString(1, values[0]);
 
+			if (values[1].isEmpty()) {
+				pstmt.setNull(2, Types.NULL);
+			} else {
+				pstmt.setDouble(2, Double.parseDouble(values[1]));
+			}
+
+			if (values[2].isEmpty()) {
+				pstmt.setNull(3, Types.NULL);
+			} else {
+				pstmt.setDouble(3, Double.parseDouble(values[2]));
+			}
+
+			if (values[3].isEmpty()) {
+				pstmt.setNull(4, Types.NULL);
+			} else {
+				pstmt.setInt(4, Integer.parseInt(values[3]));
+			}
+
+			if (values[4].isEmpty()) {
+				pstmt.setNull(5, Types.NULL);
+			} else {
+				pstmt.setInt(5, Integer.parseInt(values[4]));
+			}
+
+			if (values[5].isEmpty()) {
+				pstmt.setNull(6, Types.NULL);
+			} else {
+				pstmt.setInt(6, Integer.parseInt(values[5]));
+			}
+
+			if (values[6].isEmpty()) {
+				pstmt.setNull(7, Types.NULL);
+			} else {
+				pstmt.setInt(7, Integer.parseInt(values[6]));
+			}
+
+			// NOTES are optional so handle them accordingly
+			if (values.length == 8) {
+				pstmt.setString(8, values[7]);
+			} else {
+				pstmt.setString(8, "");
+			}
+			pstmt.executeUpdate();
+		}
+	}
+	
+	private static void updateTable(String fileName) throws SQLException {
+		Path path = Path.of(fileName);
 		AtomicBoolean isFirst = new AtomicBoolean(true);
 		AtomicReference<Connection> rollbackCon = new AtomicReference(null);
-		try (Connection con = DriverManager.getConnection(url);
-			 PreparedStatement pstmt = con.prepareStatement(sql);
+
+		try ( Connection con = DriverManager.getConnection(url);
 			 Stream<String> lines = Files.lines(path)) {
+
+			con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 			con.setAutoCommit(false);
+
 			lines.forEach(s ->
 			{
 				if (isFirst.get() == true) {
@@ -151,59 +266,20 @@ public class GetfitdbApplication implements ApplicationRunner {
 				} else {
 					String[] values = s.split(",");
 					try {
-						pstmt.setString(1, values[0]);
-
-						if (values[1].isEmpty()) {
-							pstmt.setNull(2, Types.NULL);
+						if (rowExists(con, values[0]) == true) {
+							updateRow(con, values);
 						} else {
-							pstmt.setDouble(2, Double.parseDouble(values[1]));
+							addRow(con, values);
 						}
-
-						if (values[2].isEmpty()) {
-							pstmt.setNull(3, Types.NULL );
-						} else {
-							pstmt.setDouble(3, Double.parseDouble(values[2]));
-						}
-
-						if (values[3].isEmpty()) {
-							pstmt.setNull( 4, Types.NULL );
-						} else {
-							pstmt.setInt(4, Integer.parseInt(values[3]));
-						}
-
-						if (values[4].isEmpty()) {
-							pstmt.setNull( 5, Types.NULL );
-						} else {
-							pstmt.setInt(5, Integer.parseInt(values[4]));
-						}
-
-						if (values[5].isEmpty()) {
-							pstmt.setNull( 6, Types.NULL);
-						} else {
-							pstmt.setInt(6, Integer.parseInt(values[5]));
-						}
-
-						if (values[6].isEmpty()) {
-							pstmt.setNull( 7, Types.NULL);
-						} else {
-							pstmt.setInt(7, Integer.parseInt(values[6]));
-						}
-
-						// NOTES are optional so handle them accordingly
-						if (values.length == 8) {
-							pstmt.setString(8, values[7]);
-						} else {
-							pstmt.setString( 8, "");
-						}
-						pstmt.executeUpdate();
-						con.commit();
 					} catch (SQLException e) {
 						logger.error(e.getMessage());
-						logger.error("Transaction is being rolled back");
+						logger.error("Transaction will be rolled back");
 						rollbackCon.set(con);
 					}
 				}
 			});
+			con.commit();
+			logger.info("Changes found in  " + fileName + " added to records");
 		} catch (SQLException ex) {
 			logger.error(ex.getMessage());
 		} catch (IOException e) {
@@ -232,7 +308,7 @@ public class GetfitdbApplication implements ApplicationRunner {
 			logger.info("CSV used is: " + csv.getName());
 			createNewDatabase();
 			createNewTable();
-			insertIntoTable(fileName);
+			updateTable(fileName);
 		} else {
 			logger.error("CSV file does not exist.");
 			SpringApplication.exit(this.ctx);
