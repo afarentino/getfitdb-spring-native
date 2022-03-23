@@ -1,10 +1,30 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <title>Getting Started: GetFit Web</title>
+    <title>GetFit Web - Exercise Record List</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script type="text/javascript">
+
+    </script>
 </head>
 <body>
-    <p>View the records in the current database <a href="/records">here</a></p>
+    <p>View a JSON representation of the records in the current database <a href="/api/records">here</a></p>
+    <table id="recTable">
+        <thead>
+        <tr>
+            <th>Start</th>
+            <th>Distance</th>
+            <th>Zone Time</th>
+            <th>Elapsed Time</th>
+            <th>Calories Burned</th>
+            <th>Avg Heart Rate</th>
+            <th>Max Heart Rate</th>
+            <th>Notes</th>
+        </tr>
+        </thead>
+        <tbody>
+            <tr><td colspan="8"><i>Loading...</i></td></tr>
+        </tbody>
+    </table>
 </body>
 </html>
