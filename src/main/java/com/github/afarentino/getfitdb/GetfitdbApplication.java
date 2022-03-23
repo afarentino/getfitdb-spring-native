@@ -39,17 +39,18 @@ public class GetfitdbApplication implements ApplicationRunner {
 	private static final String fileSeparator = File.separator;
 	private static final String url = "jdbc:sqlite:" + currentWorkingDir + fileSeparator + "getfit.db";
 
-	@Bean
+
 	JdbcTemplate jdbcTemplate() throws IllegalAccessException, InvocationTargetException, InstantiationException {
 		// extract this 4 parameters using your own logic
 		final String driverClassName = "org.sqlite.JDBC";
 		final String jdbcUrl = GetfitdbApplication.url;
-		final String username = "sa";
-		final String password = "sa";
+		final String username = "sa"; //
+		final String password = "sa"; //
 		// Build dataSource manually:
 		final Class<?> driverClass = ClassUtils.resolveClassName(driverClassName, this.getClass().getClassLoader());
 		final Driver driver = (Driver) ClassUtils.getConstructorIfAvailable(driverClass).newInstance();
 		final DataSource dataSource = new SimpleDriverDataSource(driver, jdbcUrl, username, password);
+
 		// or using DataSourceBuilder:
 		// final DataSource dataSource = DataSourceBuilder.create().driverClassName(driverClassName).url(jdbcUrl).username(username).password(password).build();
 		// and make the jdbcTemplate
@@ -58,8 +59,7 @@ public class GetfitdbApplication implements ApplicationRunner {
 	@Autowired
 	private ApplicationContext ctx;
 
-	@Autowired
-	private JdbcTemplate template;
+	//private JdbcTemplate template;
 
 	private static String getFileName(ApplicationArguments args) {
 		if ( args.containsOption("inFile") ) {
@@ -342,6 +342,7 @@ public class GetfitdbApplication implements ApplicationRunner {
 	}
 
 	public static void main(String[] args) {
+
 		SpringApplication.run(GetfitdbApplication.class, args);
 	}
 }

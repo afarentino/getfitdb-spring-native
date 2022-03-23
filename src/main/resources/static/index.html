@@ -3,12 +3,38 @@
 <head>
     <title>GetFit Web - Exercise Record List</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <script type="text/javascript">
 
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', init, false);
+
+        async function init() {
+            // Select the table (well, tbody)
+            let table = document.querySelector('#recTable tbody');
+            // get the Records
+            let url = "http://localhost:8080/records";
+            let resp = await fetch(url);
+            let data = await resp.json();
+
+         // create html
+         let result = '';
+         data.forEach(c => {
+            result += `<tr>
+                <td>${c.start}</td>
+                <td>${c.distance}</td>
+                <td>${c.zoneTime}</td>
+                <td>${c.elapsedTime}</td>
+                <td>${c.caloriesBurned}</td>
+                <td>${c.avgHeartRate}</td>
+                <td>${c.maxHeartRate}</td>
+                <td>${c.notes}</td>
+            </tr>`;
+        });
+        table.innerHTML = result;
+        }
     </script>
 </head>
 <body>
-    <p>View a JSON representation of the records in the current database <a href="/api/records">here</a></p>
+    <p>View a JSON representation of the records in the current database <a href="/records">here</a></p>
     <table id="recTable">
         <thead>
         <tr>

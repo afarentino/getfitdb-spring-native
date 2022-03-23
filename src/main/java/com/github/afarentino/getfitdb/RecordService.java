@@ -11,11 +11,10 @@ import java.util.List;
 
 import com.github.afarentino.getfitdb.model.ExerciseRecord;
 
-@Service
+
 public class RecordService {
     private final JdbcTemplate template;
 
-    @Autowired
     public RecordService(JdbcTemplate template) {
         this.template = template;
     }
