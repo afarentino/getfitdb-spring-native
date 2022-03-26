@@ -48,7 +48,6 @@ public class GetfitdbApplication implements ApplicationRunner {
 		return null;
 	}
 
-
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
 		String fileName = getFileName(args);
