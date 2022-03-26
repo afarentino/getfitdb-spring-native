@@ -60,7 +60,7 @@ public class RecordService implements RecordRepository {
      * Create a new Database if needed
      * @see: https://www.sqlitetutorial.net/sqlite-java/
      */
-    public static void createNewDatabase() {
+    public static void createDbIfNeeded() {
         try ( Connection conn = DriverManager.getConnection(url)) {
             if (conn != null) {
                 DatabaseMetaData meta = conn.getMetaData();
@@ -101,7 +101,7 @@ public class RecordService implements RecordRepository {
         }
     }
 
-    public static void createNewTable() {
+    public static void createTableIfNeeded() {
         // TODO: Externalize sql using application properties
         // allows schema to change without changing code.
         String sql = """
@@ -116,7 +116,7 @@ public class RecordService implements RecordRepository {
 				Notes TEXT);""";
 
         if (tableExists("records")) {
-            dropTable();
+            return;
         }
 
         try (Connection conn = DriverManager.getConnection(url);
@@ -131,7 +131,7 @@ public class RecordService implements RecordRepository {
         String sql = "SELECT COUNT(*) FROM records WHERE Start = ?;";
         int exists = 0;
         try (PreparedStatement pstmt = con.prepareStatement(sql)) {
-            pstmt.setString(1, "'" + primaryKey + "'");
+            pstmt.setString(1, primaryKey );
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 exists = rs.getInt(1);

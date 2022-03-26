@@ -64,8 +64,8 @@ public class GetfitdbApplication implements ApplicationRunner {
 		File csv = new File(fileName);
 		if (csv != null && csv.exists() ) {
 			logger.info("CSV used is: " + csv.getName());
-			RecordService.createNewDatabase();
-			RecordService.createNewTable();
+			RecordService.createDbIfNeeded();
+			RecordService.createTableIfNeeded();
 			RecordService.updateTable(fileName);
 		} else {
 			logger.error("CSV file does not exist.");
