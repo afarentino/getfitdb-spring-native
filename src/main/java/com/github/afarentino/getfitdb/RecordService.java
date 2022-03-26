@@ -49,7 +49,7 @@ public class RecordService implements RecordRepository {
 
     public List<ExerciseRecord> findAll() {
         String findAllRecords = """
-                select * from records
+                select * from records ORDER BY Start
                 """;
 
         return template.query(findAllRecords, rowMapper);
