@@ -15,21 +15,21 @@
             let resp = await fetch(url);
             let data = await resp.json();
 
-         // create html
-         let result = '';
-         data.forEach(c => {
-            result += `<tr>
-                <td>${c.start}</td>
-                <td>${c.distance}</td>
-                <td>${c.zoneTime}</td>
-                <td>${c.elapsedTime}</td>
-                <td>${c.caloriesBurned}</td>
-                <td>${c.avgHeartRate}</td>
-                <td>${c.maxHeartRate}</td>
-                <td>${c.notes}</td>
-            </tr>`;
-        });
-        table.innerHTML = result;
+            // create html
+            let result = '';
+            data.forEach(c => {
+                result += `<tr>
+                    <td>${c.start}</td>
+                    <td>${c.distance}</td>
+                    <td>${c.zoneTime}</td>
+                    <td>${c.elapsedTime}</td>
+                    <td>${c.caloriesBurned}</td>
+                    <td>${c.avgHeartRate}</td>
+                    <td>${c.maxHeartRate}</td>
+                    <td>${c.notes}</td>
+                </tr>`;
+            });
+            table.innerHTML = result;
         }
     </script>
 </head>

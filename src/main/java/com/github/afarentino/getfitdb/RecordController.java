@@ -1,11 +1,12 @@
 package com.github.afarentino.getfitdb;
 
-import java.util.ArrayList;
-import java.util.List;
 import com.github.afarentino.getfitdb.model.ExerciseRecord;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * In Spring a RestController annotation is equivalent to writing a @Controller class which has
@@ -15,10 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 public class RecordController {
-    //private final RecordService recordService;
+    private final RecordService recordService;
 
-    public RecordController() {
-        //this.recordService = null;
+    @Autowired
+    public RecordController(RecordService service) {
+        this.recordService = service;
     }
 
     @GetMapping("/records")
@@ -36,8 +38,10 @@ public class RecordController {
                 200,
                 "This is a note"
                 );
-        List<ExerciseRecord> list = new ArrayList<ExerciseRecord>();
-        list.add(rec);
+        List<ExerciseRecord> list = new ArrayList<>();
+        //list.add(rec);
+
+        list = recordService.findAll();
         return list;
     }
 }
