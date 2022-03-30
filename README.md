@@ -9,6 +9,7 @@ project.
 * Spring Boot
 * Spring Web
 * SQLite
+* HTML5/CSS/Javascript
 * Gradle 7.x
 * JUnit 5
 * Java OpenJDK 17
@@ -21,7 +22,7 @@ called records and insert the rows found.  If the records tables
 exists the new rows only found in the csv file are added.
 
 If no --inFile argument is specified, the application starts
-in server mode firing up an embedded tomcated web container to
+in server mode only firing up an embedded Tomcat web container to
 display a page containing the contents of the underling database.
 
 Native SQLite database tooling can be used to view the 
