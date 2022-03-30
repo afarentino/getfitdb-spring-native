@@ -12,20 +12,25 @@
     <script type="text/javascript" src="/scripts/table.js"></script>
 
     <title>GetFitDB - Exercise Record List</title>
+    <style>
+        th {
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <div class="table-responsive">
-        <table id="recTable" class="table table-primary table-striped">
+        <table id="recTable" class="table table-dark table-striped">
             <thead>
             <tr>
-                <th>Start</th>
-                <th>Distance</th>
-                <th>Zone Time</th>
-                <th>Elapsed Time</th>
-                <th>Calories Burned</th>
-                <th>Avg Heart Rate</th>
-                <th>Max Heart Rate</th>
-                <th>Notes</th>
+                <th data-sort="start">Start</th>
+                <th data-sort="distance">Distance</th>
+                <th data-sort="zoneTime">Zone Time</th>
+                <th data-sort="elapsedTime">Elapsed Time</th>
+                <th data-sort="caloriesBurned">Calories Burned</th>
+                <th data-sort="avgHeartRate">Avg Heart Rate</th>
+                <th data-sort="maxHeartRate">Max Heart Rate</th>
+                <th data-sort="notes">Notes</th>
             </tr>
             </thead>
             <tbody>
